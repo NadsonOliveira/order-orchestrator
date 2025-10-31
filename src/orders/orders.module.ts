@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
-import { OrdersController } from './orders.controller';
-import { OrdersService } from './services/orders.service';
+import { OrdersController } from './controller/orders.controller';
+import { OrdersService } from './services/ordersCreate.service';
 import { Order } from './entities/order.entity';
 import { OrderProcessor } from './processors/order.processor';
 

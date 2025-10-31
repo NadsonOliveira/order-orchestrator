@@ -10,6 +10,7 @@ import { Queue } from 'bull';
 import { CreateOrderDto } from '../dto/create-order.dto';
 import { OrderStatus } from '../enums/order-status.enum';
 import { Order } from '../entities/order.entity';
+import { OrderFilterDto } from '../dto/order-filter.dto';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -21,7 +22,7 @@ export class OrdersService {
     private readonly orderQueue: Queue,
   ) {}
 
-  async receiveOrder(createOrderDto: CreateOrderDto): Promise<Order> {
+  async create(createOrderDto: CreateOrderDto): Promise<Order> {
     const { idempotency_key, customer, items } = createOrderDto;
 
     const existingOrder = await this.ordersRepository.findOne({
@@ -33,35 +34,65 @@ export class OrdersService {
       );
     }
 
-    let newOrder = this.ordersRepository.create({
+    const newOrder = this.ordersRepository.create({
       external_id: uuidv4(),
-      idempotency_key: uuidv4(),
+      idempotency_key,
       customers: { ...customer },
       items: [...items],
       status: OrderStatus.RECEIVED,
     });
 
     try {
-      newOrder = await this.ordersRepository.save(newOrder);
+      const savedOrder = await this.ordersRepository.save(newOrder);
 
-      await this.orderQueue.add('process-order', {
-        orderId: newOrder.id,
-        externalId: newOrder.external_id,
-      });
-
-      newOrder.status = OrderStatus.QUEUED;
-      await this.ordersRepository.save(newOrder);
+      this.orderQueue
+        .add('process-order', {
+          orderId: savedOrder.id,
+          externalId: savedOrder.external_id,
+        })
+        .catch((err) => {
+          console.error('Falha ao adicionar pedido na fila:', err);
+        });
 
       return {
-        ...newOrder,
+        ...savedOrder,
         customers: createOrderDto.customer,
         items: createOrderDto.items,
       };
     } catch (error) {
-      console.error('Falha ao persistir ou enfileirar pedido:', error);
+      console.error('Falha ao salvar pedido:', error);
       throw new InternalServerErrorException(
         'Falha de infraestrutura ao processar o pedido.',
       );
     }
+  }
+
+  async findAll(filterDto: OrderFilterDto): Promise<Order[]> {
+    const { status } = filterDto;
+    const query = this.ordersRepository.createQueryBuilder('o');
+    query.select([
+      'o.id',
+      'o.idempotency_key',
+      'o.external_id',
+      'o.status',
+      'o.created_at',
+      'o.customers',
+      'o.items',
+    ]);
+
+    if (status) {
+      query.where('o.status = :status', { status });
+    }
+    query.orderBy('o.created_at', 'DESC');
+
+    return query.getMany();
+  }
+
+  async findById(id: number): Promise<Order> {
+    const orders = await this.ordersRepository.findOne({ where: { id } });
+    if (!orders) {
+      throw new Error(`Order com id ${id} não encontrada`);
+    }
+    return orders;
   }
 }

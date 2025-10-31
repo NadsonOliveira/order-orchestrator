@@ -1,4 +1,9 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { OrderStatus } from '../enums/order-status.enum';
 
 @Entity('orders')
@@ -18,6 +23,9 @@ export class Order {
     default: OrderStatus.RECEIVED,
   })
   status: OrderStatus;
+
+  @CreateDateColumn({ type: 'timestamp' })
+  created_at: Date;
 
   @Column({ type: 'jsonb' })
   customers: any;
