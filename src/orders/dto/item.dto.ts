@@ -28,8 +28,7 @@ export class ItemDto {
     description: 'Unit price of the item (must be a positive number)',
     example: 29.99,
   })
-  @IsNumber({ maxDecimalPlaces: 2 }) // ✅ Adicionar restrição de casas decimais para preço
+  @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
-  // ⚠️ IsNotEmpty é redundante.
   unit_price: number;
 }
