@@ -72,10 +72,7 @@ export class OrdersController {
   }
 
   @Get('metricas/queue')
-  @ApiOperation({ summary: 'Encontrar métricas de Orders por ID' })
-  @ApiBadRequestResponse({
-    description: 'ID não encontrado ou inválido',
-  })
+  @ApiOperation({ summary: 'Métricas de Orders' })
   @ApiResponse({
     status: 200,
     description: 'Métricas encontradas com sucesso.',
