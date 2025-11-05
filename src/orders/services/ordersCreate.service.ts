@@ -88,6 +88,17 @@ export class OrdersService {
     return query.getMany();
   }
 
+  async findMetricasById(): Promise<{ status: string; total: number }[]> {
+    const query = this.ordersRepository
+      .createQueryBuilder('o')
+      .select('o.status', 'status')
+      .addSelect('COUNT(*)', 'total')
+      .groupBy('o.status')
+      .orderBy('o.status', 'ASC');
+
+    return query.getRawMany();
+  }
+
   async findById(id: number): Promise<Order> {
     const orders = await this.ordersRepository.findOne({ where: { id } });
     if (!orders) {

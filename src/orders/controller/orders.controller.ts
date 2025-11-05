@@ -70,4 +70,17 @@ export class OrdersController {
   async findById(@Param('id') id: number): Promise<Order> {
     return this.ordersService.findById(id);
   }
+
+  @Get('metricas/queue')
+  @ApiOperation({ summary: 'Encontrar métricas de Orders por ID' })
+  @ApiBadRequestResponse({
+    description: 'ID não encontrado ou inválido',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Métricas encontradas com sucesso.',
+  })
+  async findMetricasById(): Promise<{ status: string; total: number }[]> {
+    return this.ordersService.findMetricasById();
+  }
 }
