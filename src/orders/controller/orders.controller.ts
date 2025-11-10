@@ -77,7 +77,7 @@ export class OrdersController {
     status: 200,
     description: 'Métricas encontradas com sucesso.',
   })
-  async findMetricasById(): Promise<{ status: string; total: number }[]> {
-    return this.ordersService.findMetricasById();
+  async findMetricas(): Promise<{ status: string; total: number }[]> {
+    return this.ordersService.findMetricas();
   }
 }
