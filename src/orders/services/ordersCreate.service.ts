@@ -88,7 +88,7 @@ export class OrdersService {
     return query.getMany();
   }
 
-  async findMetricasById(): Promise<{ status: string; total: number }[]> {
+  async findMetricas(): Promise<{ status: string; total: number }[]> {
     const query = this.ordersRepository
       .createQueryBuilder('o')
       .select('o.status', 'status')
